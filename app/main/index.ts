@@ -2,8 +2,20 @@ import { app, BrowserWindow } from 'electron';
 import { join } from 'path';
 import { setupFileHandlers, sendFileToRenderer, getFilePathFromArgs } from './file-handler';
 import { createMenu } from './menu';
+import { parseScreenshotArgs, runScreenshotMode } from './screenshot-mode';
 
 let mainWindow: BrowserWindow | null = null;
+
+// Screenshot CLI mode: run headless and exit
+const screenshotArgs = parseScreenshotArgs(process.argv);
+if (screenshotArgs) {
+  app.whenReady().then(async () => {
+    setupFileHandlers();
+    await runScreenshotMode(screenshotArgs);
+    app.quit();
+  });
+} else {
+// Normal GUI mode (rest of the file is wrapped in this else block)
 
 function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
@@ -71,3 +83,4 @@ if (!gotTheLock) {
     app.quit();
   });
 }
+} // end of GUI mode else block

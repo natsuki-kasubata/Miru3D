@@ -24,13 +24,21 @@ export const ModelRenderer: React.FC<ModelRendererProps> = ({
 
   useAutoCamera(bounds);
 
-  // Add model to scene
+  // Add model to scene and enable morph target updates
   useEffect(() => {
     const group = groupRef.current;
     if (!group) return;
 
     group.clear();
     group.add(scene);
+
+    // Ensure morph targets update each frame
+    scene.traverse((child) => {
+      if (child instanceof THREE.Mesh && child.morphTargetInfluences) {
+        child.geometry.morphTargetsRelative =
+          child.geometry.morphTargetsRelative ?? false;
+      }
+    });
 
     return () => {
       group.clear();

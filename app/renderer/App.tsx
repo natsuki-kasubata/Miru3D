@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import type { FileData } from '@shared/types';
+import type { FileData, ScreenshotRequest } from '@shared/types';
 import { useFileDrop } from './hooks/use-file-drop';
 import { useModelLoader } from './hooks/use-model-loader';
 import { isSplatFormat } from './loaders/loader-registry';
 import { DropZone } from './components/DropZone';
 import { Viewer3D } from './components/Viewer3D';
+import { ScreenshotCapture } from './components/ScreenshotCapture';
 import { ErrorOverlay } from './components/ErrorOverlay';
 
 export const App: React.FC = () => {
@@ -12,9 +13,29 @@ export const App: React.FC = () => {
   const [showGrid, setShowGrid] = useState(true);
   const [resetTrigger, setResetTrigger] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [screenshotReq, setScreenshotReq] = useState<ScreenshotRequest | null>(null);
 
   const { scene, bounds, modelInfo, isLoading, progress, stage, error: loadError, loadModel, clear } =
     useModelLoader();
+
+  // Screenshot mode: listen for capture requests from main process
+  useEffect(() => {
+    return window.electronAPI.onScreenshotCapture(async (req) => {
+      console.log('[screenshot] Received capture request:', req.filePath);
+      try {
+        const fileData = await window.electronAPI.readFile(req.filePath);
+        console.log('[screenshot] File loaded:', fileData.fileName, fileData.category);
+        setFileData(fileData);
+        if (fileData.category === 'mesh') {
+          await loadModel(fileData);
+          console.log('[screenshot] Model loaded, setting screenshot request');
+        }
+        setScreenshotReq(req);
+      } catch (err) {
+        console.error('[screenshot] Error:', err);
+      }
+    });
+  }, [loadModel]);
 
   const handleFileLoaded = useCallback(
     async (data: FileData) => {
@@ -74,6 +95,11 @@ export const App: React.FC = () => {
 
   const displayError = error || loadError;
   const hasFile = fileData !== null;
+
+  // Screenshot mode: render only the capture component
+  if (screenshotReq && scene && bounds) {
+    return <ScreenshotCapture request={screenshotReq} scene={scene} bounds={bounds} />;
+  }
 
   return (
     <div

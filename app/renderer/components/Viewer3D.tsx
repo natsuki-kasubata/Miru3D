@@ -1,12 +1,14 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { FileData, ModelInfo } from '@shared/types';
 import type { BoundsInfo } from '../lib/model-utils';
+import { collectBlendshapes } from '../lib/blendshape-utils';
 import { ModelRenderer } from './ModelRenderer';
 import { GaussianSplatRenderer } from './GaussianSplatRenderer';
 import { FileInfoOverlay } from './FileInfoOverlay';
 import { LoadingOverlay } from './LoadingOverlay';
+import { BlendshapePanel } from './BlendshapePanel';
 
 interface Viewer3DProps {
   fileData: FileData;
@@ -43,6 +45,11 @@ export const Viewer3D: React.FC<Viewer3DProps> = ({
     setCanvasReady(true);
   }, []);
 
+  const blendshapes = useMemo(
+    () => (scene ? collectBlendshapes(scene) : []),
+    [scene],
+  );
+
   const showLoading = isLoading || (!isSplat && !canvasReady);
 
   return (
@@ -73,6 +80,9 @@ export const Viewer3D: React.FC<Viewer3DProps> = ({
         />
       )}
       {!showLoading && modelInfo && <FileInfoOverlay info={modelInfo} />}
+      {!showLoading && scene && blendshapes.length > 0 && (
+        <BlendshapePanel blendshapes={blendshapes} scene={scene} />
+      )}
       {!showLoading && isSplat && (
         <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-sm text-white text-xs rounded-lg px-3 py-2 pointer-events-none">
           <p className="font-medium text-sm">{fileData.fileName}</p>
