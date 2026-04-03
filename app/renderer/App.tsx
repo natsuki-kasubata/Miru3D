@@ -5,7 +5,6 @@ import { useModelLoader } from './hooks/use-model-loader';
 import { isSplatFormat } from './loaders/loader-registry';
 import { DropZone } from './components/DropZone';
 import { Viewer3D } from './components/Viewer3D';
-import { LoadingOverlay } from './components/LoadingOverlay';
 import { ErrorOverlay } from './components/ErrorOverlay';
 
 export const App: React.FC = () => {
@@ -14,7 +13,7 @@ export const App: React.FC = () => {
   const [resetTrigger, setResetTrigger] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  const { scene, bounds, modelInfo, isLoading, error: loadError, loadModel, clear } =
+  const { scene, bounds, modelInfo, isLoading, progress, stage, error: loadError, loadModel, clear } =
     useModelLoader();
 
   const handleFileLoaded = useCallback(
@@ -75,7 +74,6 @@ export const App: React.FC = () => {
 
   const displayError = error || loadError;
   const hasFile = fileData !== null;
-  const showViewer = hasFile && !isLoading;
 
   return (
     <div
@@ -86,18 +84,19 @@ export const App: React.FC = () => {
     >
       {!hasFile && <DropZone isDragging={isDragging} />}
 
-      {showViewer && fileData && (
+      {hasFile && fileData && (
         <Viewer3D
           fileData={fileData}
           scene={scene}
           bounds={bounds}
           modelInfo={modelInfo}
+          isLoading={isLoading}
+          progress={progress}
+          stage={stage}
           showGrid={showGrid}
           resetTrigger={resetTrigger}
         />
       )}
-
-      {isLoading && <LoadingOverlay />}
 
       {displayError && (
         <ErrorOverlay

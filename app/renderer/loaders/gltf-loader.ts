@@ -11,7 +11,8 @@ export interface GltfLoadResult {
 
 export async function loadGltf(
   buffer: Uint8Array,
-  format: ModelFormat
+  format: ModelFormat,
+  onProgress?: (percent: number) => void
 ): Promise<GltfLoadResult> {
   const loader = new GLTFLoader();
 
@@ -20,7 +21,7 @@ export async function loadGltf(
     loader.register((parser) => new VRMLoaderPlugin(parser));
   }
 
-  const blob = new Blob([buffer], {
+  const blob = new Blob([buffer as BlobPart], {
     type: format === 'glb' || format === 'vrm' ? 'model/gltf-binary' : 'model/gltf+json',
   });
   const url = URL.createObjectURL(blob);
@@ -28,7 +29,16 @@ export async function loadGltf(
   try {
     const gltf = await new Promise<{ scene: THREE.Group; userData: Record<string, unknown> }>(
       (resolve, reject) => {
-        loader.load(url, resolve, undefined, reject);
+        loader.load(
+          url,
+          resolve,
+          (event) => {
+            if (event.lengthComputable && onProgress) {
+              onProgress((event.loaded / event.total) * 100);
+            }
+          },
+          reject
+        );
       }
     );
 

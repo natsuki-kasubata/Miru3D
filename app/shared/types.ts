@@ -23,6 +23,7 @@ export interface ElectronAPI {
   readFile: (filePath: string) => Promise<FileData>;
   openDialog: () => Promise<FileData | null>;
   onFileOpen: (callback: (data: FileData) => void) => () => void;
+  getPathForFile: (file: File) => string;
 }
 
 declare global {

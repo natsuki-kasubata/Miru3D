@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import { IPC } from '../shared/ipc-channels';
 import type { FileData, ElectronAPI } from '../shared/types';
 
@@ -12,6 +12,7 @@ const api: ElectronAPI = {
       ipcRenderer.removeListener(IPC.FILE_OPEN, handler);
     };
   },
+  getPathForFile: (file: File) => webUtils.getPathForFile(file),
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);

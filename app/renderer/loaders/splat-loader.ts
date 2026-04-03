@@ -7,7 +7,7 @@ export function createSplatBlobUrl(fileData: FileData): string {
     ksplat: 'application/octet-stream',
   };
 
-  const blob = new Blob([fileData.buffer], {
+  const blob = new Blob([fileData.buffer as BlobPart], {
     type: mimeMap[fileData.extension] ?? 'application/octet-stream',
   });
   return URL.createObjectURL(blob);

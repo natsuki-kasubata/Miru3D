@@ -30,7 +30,7 @@ export const GaussianSplatRenderer: React.FC<GaussianSplatRendererProps> = ({
     });
     viewerRef.current = viewer;
 
-    const blob = new Blob([fileData.buffer], { type: 'application/octet-stream' });
+    const blob = new Blob([fileData.buffer as BlobPart], { type: 'application/octet-stream' });
     const url = URL.createObjectURL(blob);
 
     let formatNum = 0; // auto-detect

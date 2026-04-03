@@ -1,15 +1,27 @@
 import * as THREE from 'three';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 
-export async function loadFbx(buffer: Uint8Array): Promise<THREE.Group> {
+export async function loadFbx(
+  buffer: Uint8Array,
+  onProgress?: (percent: number) => void
+): Promise<THREE.Group> {
   const loader = new FBXLoader();
 
-  const blob = new Blob([buffer], { type: 'application/octet-stream' });
+  const blob = new Blob([buffer as BlobPart], { type: 'application/octet-stream' });
   const url = URL.createObjectURL(blob);
 
   try {
     const group = await new Promise<THREE.Group>((resolve, reject) => {
-      loader.load(url, resolve, undefined, reject);
+      loader.load(
+        url,
+        resolve,
+        (event) => {
+          if (event.lengthComputable && onProgress) {
+            onProgress((event.loaded / event.total) * 100);
+          }
+        },
+        reject
+      );
     });
 
     // FBX files are often in cm units (Maya/3ds Max). Auto-scale if too large.

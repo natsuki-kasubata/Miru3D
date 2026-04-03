@@ -2,7 +2,6 @@
   "name": "miru3d",
   "version": "1.0.0",
   "description": "3D model viewer for Windows - drag & drop GLB, FBX, OBJ, VRM, 3DGS",
-  "type": "module",
   "main": "dist/main/index.js",
   "author": "Natsuki",
   "license": "MIT",
@@ -42,8 +41,17 @@
       "output": "release"
     },
     "files": [
-      "dist/**/*",
-      "resources/**/*"
+      "package.json",
+      {
+        "from": "dist",
+        "to": "dist",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "resources",
+        "to": "resources",
+        "filter": ["**/*"]
+      }
     ],
     "win": {
       "target": "nsis",
